@@ -22,7 +22,7 @@ import struct
 
 
 # Configure the client
-serverIP = "10.2.81.3" 
+serverIP = "10.2.81.3"
 serverPort = 9007
 
 bigEndian = True
@@ -46,8 +46,7 @@ for res in socket.getaddrinfo(serverIP, serverPort, socket.AF_UNSPEC, socket.SOC
 if s is None:
     print ('Could not connect :(')
     sys.exit(1)
-    
-#for req in range(0,numberEcho):
+
 iso = ISO8583()
 iso.redefineBit(41, 41, 'Card Acceptor Terminal Identification', 'N', 16, 'an')
 iso.redefineBit(18, 18, 'Merchants Type', 'N', 4, 'n')
@@ -69,6 +68,7 @@ iso.setBit(43,'                                  dicoba')
 iso.setBit(48,'0812 94136044000000010000')
 iso.setBit(49,'360')
 iso.setBit(63,'131001')
+
 if bigEndian:
 	try:
 		ascii = iso.getRawIso()
@@ -87,15 +87,12 @@ if bigEndian:
 				print ("\nTransaction Success !!!")
 			else:
 				print ("\nTransaction Failed Error Code " + isoAns.getBit(39))
-				
 	except InvalidIso8583, ii:
 		print ii
 		sys.exit(1)	
-	
-	
 else:
 	try:
-		message = iso.getNetworkISO(False) 
+		message = iso.getNetworkISO(False)
 		s.send(message)
 		print ('Sending ... %s' % message)
 		ans = s.recv(2048)
@@ -105,14 +102,11 @@ else:
 		v1 = isoAns.getBitsAndValues()
 		for v in v1:
 			print ('Bit %s of type %s with value = %s' % (v['bit'],v['type'],v['value']))
-				
 		if isoAns.getMTI() == '0810':
-			print ("\tThat's great !!! The server understand my message !!!")
+			print ("    That's great !!! The server understand my message !!!")
 		else:
 			print ("The server dosen't understand my message!")
-		
 	except InvalidIso8583, ii:
 		print ii
-		sys.exit(1)			
-				
-s.close() 
+		sys.exit(1)
+s.close()
