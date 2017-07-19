@@ -14,7 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from ISO8583.ISO8583 import ISO8583
-from ISO8583.ISOErrors import *
+from ISO8583.ISOErrors import InvalidIso8583
 import socket
 import sys
 import time
@@ -24,26 +24,27 @@ import struct
 # Configure the client
 serverIP = "10.2.81.3"
 serverPort = 9007
-#numberEcho = 5
-timeBetweenEcho = 10 # in seconds
+# numberEcho = 5
+timeBetweenEcho = 10  # in seconds
 
 bigEndian = True
-#bigEndian = False
+# bigEndian = False
 
 s = None
-for res in socket.getaddrinfo(serverIP, serverPort, socket.AF_UNSPEC, socket.SOCK_STREAM):
+for res in socket.getaddrinfo(serverIP, serverPort, socket.AF_UNSPEC,
+                              socket.SOCK_STREAM):
     af, socktype, proto, canonname, sa = res
     try:
         s = socket.socket(af, socktype, proto)
     except socket.error, msg:
-    s = None
-    continue
+        s = None
+        continue
     try:
         s.connect(sa)
     except socket.error, msg:
-    s.close()
-    s = None
-    continue
+        s.close()
+        s = None
+        continue
     break
 if s is None:
     print ('Could not connect :(')
@@ -52,18 +53,18 @@ if s is None:
 while True:
     iso = ISO8583()
     iso.setMTI('0800')
-    iso.setBit(7,'6062307470')
-    iso.setBit(11,'000573')
-    iso.setBit(70,'301')
+    iso.setBit(7, '6062307470')
+    iso.setBit(11, '000573')
+    iso.setBit(70, '301')
     if bigEndian:
         try:
             ascii = iso.getRawIso()
-            message =  struct.pack('!h', len(ascii) + 2)
+            message = struct.pack('!h', len(ascii) + 2)
             message += ascii
             s.send(message)
-            #print ('Sending ... %s' % message)
+            # print ('Sending ... %s' % message)
             ans = s.recv(2048)
-            #print ("\nGet ASCII |%s|" % ans)
+            # print ("\nGet ASCII |%s|" % ans)
             size = len(ans)-2
             ans = ans[2:size]
             isoAns = ISO8583()
@@ -85,12 +86,13 @@ while True:
             ans = s.recv(2048)
             print ("\nInput ASCII |%s|" % ans)
             isoAns = ISO8583()
-            isoAns.setNetworkISO(ans,False)
+            isoAns.setNetworkISO(ans, False)
             v1 = isoAns.getBitsAndValues()
             for v in v1:
-                print ('Bit %s of type %s with value = %s' % (v['bit'],v['type'],v['value']))
+                print ('Bit %s of type %s with value = %s' % (v['bit'],
+                       v['type'], v['value']))
             if isoAns.getMTI() == '0810':
-                print ("    That's great !!! The server understand my message !!!")
+                print ("That's great !!! The server understand my message !!!")
             else:
                 print ("The server dosen't understand my message!")
         except InvalidIso8583, ii:
